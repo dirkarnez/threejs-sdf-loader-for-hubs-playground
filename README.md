@@ -1,4 +1,4 @@
-[threejs-for-hubs-playground](https://dirkarnez.github.io/threejs-for-hubs-playground)
+[threejs-sdf-loader-for-hubs-playground](https://dirkarnez.github.io/threejs-sdf-loader-for-hubs-playground)
 ====================================================================
 
 ### Using
