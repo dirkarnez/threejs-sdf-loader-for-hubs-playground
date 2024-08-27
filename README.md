@@ -4,6 +4,7 @@ From [MUMoleculeJS/MUMoleculeJS/public_html/src/SDFParser.js at master · Miller
 
 ### TODOs
 - [ ] Make it works in three.js
+  - https://github.com/MillersvilleCS/MUMoleculeJS/blob/master/MUMoleculeJS/public_html/src/MoleculeGeometryBuilder.js
 
 ### Tutorials
 - [three.js/examples/webgl_loader_pdb.html at master · mrdoob/three.js](https://github.com/mrdoob/three.js/blob/master/examples/webgl_loader_pdb.html)
