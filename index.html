@@ -39,6 +39,12 @@
 		import * as THREE from 'three';
 		import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 		import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+		import { SDFParser } from "./MUMoleculeJS-master/MUMoleculeJS/public_html/src/SDFParser.js";
+		import { MoleculeGeometryBuilder } from "./MUMoleculeJS-master/MUMoleculeJS/public_html/src/MoleculeGeometryBuilder.js";
+		
+		import { PDBLoader } from 'three/addons/loaders/PDBLoader.js';
+
 		//import * as troikaThreeText from "troika-three-text";
 		debugger;
 		// "troika-three-text": "https://cdn.jsdelivr.net/npm/troika-three-text@0.45.0/+esm"
@@ -92,35 +98,138 @@
 		scene.add( lights[ 2 ] );
 	
 		
-		const group = new THREE.Group();
+		// const group = new THREE.Group();
 
-		const geometry = new THREE.BufferGeometry();
-		geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( [], 3 ) );
+		// const geometry = new THREE.BufferGeometry();
+		// geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( [], 3 ) );
 
-		const lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.5 } );
-		const meshMaterial = new THREE.MeshPhongMaterial( { color: 0x156289, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
+		// const lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.5 } );
+		// const meshMaterial = new THREE.MeshPhongMaterial( { color: 0x156289, emissive: 0x072534, side: THREE.DoubleSide, flatShading: true } );
 
-		group.add( new THREE.LineSegments( geometry, lineMaterial ) );
-		group.add( new THREE.Mesh( geometry, meshMaterial ) );
+		// group.add( new THREE.LineSegments( geometry, lineMaterial ) );
+		// group.add( new THREE.Mesh( geometry, meshMaterial ) );
 		
-		const data = {
-			width: 15,
-			height: 15,
-			depth: 15,
-			widthSegments: 1,
-			heightSegments: 1,
-			depthSegments: 1
-		};
+		// const data = {
+		// 	width: 15,
+		// 	height: 15,
+		// 	depth: 15,
+		// 	widthSegments: 1,
+		// 	heightSegments: 1,
+		// 	depthSegments: 1
+		// };
 		
-		group.children[ 0 ].geometry.dispose();
-		group.children[ 1 ].geometry.dispose();
+		// group.children[ 0 ].geometry.dispose();
+		// group.children[ 1 ].geometry.dispose();
 		
-		const boxGeometry = new THREE.BoxGeometry(data.width, data.height, data.depth, data.widthSegments, data.heightSegments, data.depthSegments);
+		// const boxGeometry = new THREE.BoxGeometry(data.width, data.height, data.depth, data.widthSegments, data.heightSegments, data.depthSegments);
 		
-		group.children[ 0 ].geometry = new THREE.WireframeGeometry( boxGeometry );
-		group.children[ 1 ].geometry = boxGeometry;
+		// group.children[ 0 ].geometry = new THREE.WireframeGeometry( boxGeometry );
+		// group.children[ 1 ].geometry = boxGeometry;
 	
-		scene.add(group);
+		// scene.add(group);
+
+
+		fetch("./Conformer3D_COMPOUND_CID_2244.sdf")
+		.then(resp => resp.text())
+		.then(data => {
+			const z = new SDFParser().parse(data);
+			// const a = new MoleculeGeometryBuilder().create(z);
+
+
+			const _atomMap = {};
+			//const loader = new PDBLoader();
+
+
+			function buildGeometry({atoms, bonds}) {
+
+				const build = {
+					geometryAtoms: new THREE.BufferGeometry(),
+					geometryBonds: new THREE.BufferGeometry()
+					// json: {
+					// 	atoms: atoms
+					// }
+				};
+
+				const geometryAtoms = build.geometryAtoms;
+				const geometryBonds = build.geometryBonds;
+
+				const verticesAtoms = [];
+				const colorsAtoms = [];
+				const verticesBonds = [];
+
+				// atoms
+
+				const c = new THREE.Color();
+
+				debugger;
+				for ( let i = 0, l = atoms.length; i < l; i ++ ) {
+
+					const atom = atoms[ i ];
+
+					const x = atom.x;
+					const y = atom.y;
+					const z = atom.z;
+
+					verticesAtoms.push( x, y, z );
+
+					// const r = atom[ 3 ][ 0 ] / 255;
+					// const g = atom[ 3 ][ 1 ] / 255;
+					// const b = atom[ 3 ][ 2 ] / 255;
+
+					// c.setRGB( r, g, b, SRGBColorSpace );
+
+					// colorsAtoms.push( c.r, c.g, c.b );
+
+					c.setRGB( 1.0, 0, 0, THREE.SRGBColorSpace );
+					colorsAtoms.push( c.r, c.g, c.b );
+
+				}
+
+				// bonds
+
+				for ( let i = 0, l = bonds.length; i < l; i ++ ) {
+
+					const bond = bonds[ i ];
+
+					const start = bond.from;
+					const end = bond.to;
+
+					const startAtom = _atomMap[ start ];
+					const endAtom = _atomMap[ end ];
+
+					let x = startAtom[ 0 ];
+					let y = startAtom[ 1 ];
+					let z = startAtom[ 2 ];
+
+					verticesBonds.push( x, y, z );
+
+					x = endAtom[ 0 ];
+					y = endAtom[ 1 ];
+					z = endAtom[ 2 ];
+
+					verticesBonds.push( x, y, z );
+
+				}
+
+				// build geometry
+
+				geometryAtoms.setAttribute( 'position', new Float32BufferAttribute( verticesAtoms, 3 ) );
+				geometryAtoms.setAttribute( 'color', new Float32BufferAttribute( colorsAtoms, 3 ) );
+
+				geometryBonds.setAttribute( 'position', new Float32BufferAttribute( verticesBonds, 3 ) );
+
+				return build;
+
+			}
+
+			
+
+			debugger;
+			scene.add(buildGeometry(z));
+
+			//a.create(json, atomRenderType, bondRenderType, atomScale, bondThickness) {
+			debugger;
+		});
 
 		// // Add cube to Scene
 
